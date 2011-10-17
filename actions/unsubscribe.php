@@ -1,4 +1,5 @@
 <?php
+
 	global $CONFIG;
 
 	gatekeeper();
@@ -30,4 +31,3 @@
 
 	forward($_SERVER['HTTP_REFERER']);
 	exit;
-?>

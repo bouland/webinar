@@ -1,7 +1,5 @@
 <?php
-	//$api = dirname(dirname(__FILE__)) . '/vendors/bbb-api-php/bbb_api.php';
-	//require( $api );
-// Load configuration
+
 	global $CONFIG;
 
 	gatekeeper();
@@ -27,4 +25,4 @@
 	}
 	forward($_SERVER['HTTP_REFERER']);
 	exit;
-?>
+

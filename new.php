@@ -5,7 +5,6 @@
 	
 	set_context('groups');
 	
-	
 	$container_guid = page_owner();
 	set_page_owner($container_guid);
 	
@@ -19,4 +18,3 @@
 	
 	page_draw($title, $body);
 	
-?>

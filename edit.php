@@ -33,3 +33,4 @@
 	
 	page_draw($title, $body);
 	
+?>

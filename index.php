@@ -32,3 +32,4 @@
 	
 	// Finally draw the page
 	page_draw($title, $body);
+?>

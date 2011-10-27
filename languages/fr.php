@@ -82,3 +82,5 @@
 	);
 					
 	add_translation("fr",$french);
+
+?>

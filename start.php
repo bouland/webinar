@@ -49,7 +49,7 @@
 		
 		elgg_extend_view('groups/left_column', 'meeting/profilegroup');
 		elgg_extend_view('submenu/extend', 'meeting/relationships');
-		
+		elgg_extend_view('css','webinar/css');
 		
 	}
 	
@@ -240,3 +240,4 @@
 			
 		}
 	}
+?>

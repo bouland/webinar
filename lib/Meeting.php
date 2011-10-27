@@ -83,7 +83,14 @@ class ElggMeeting extends ElggObject {
 				return array('registered','attendee');
 			break;
 		}
-	}
+	}/*
+	public function getRelationShipUsers($relationShip, $limit = 10, $offset = 0, $count = false) {
+		if ($relationShip == 'attendee' || $relationShip == 'registered' ) {
+			return );
+		}else{
+			return null;
+		}
+	}*/
 	public function getRelationShipOptions($relationship, $limit = 10, $count = false){
 		return array(	'relationship' => $relationship,
 						'relationship_guid' => $this->guid,
@@ -203,3 +210,23 @@ function is_meeting_attendee($meeting_guid, $user_guid) {
 		return false;
 	}
 }
+/*
+function get_meeting_relationship($relationship, $meeting_guid, $limit = 10, $offset = 0, $site_guid = 0, $count = false) {
+
+	// in 1.7 0 means "not set."  rewrite to make sense.
+	if (!$site_guid) {
+		$site_guid = ELGG_ENTITIES_ANY_VALUE;
+	}
+
+	return elgg_get_entities_from_relationship(array(
+		'relationship' => $relationship,
+		'relationship_guid' => $meeting_guid,
+		'inverse_relationship' => TRUE,
+		'types' => 'user',
+		'limit' => $limit,
+		'offset' => $offset,
+		'count' => $count,
+		'site_guid' => $site_guid
+	));
+}*/
+?>

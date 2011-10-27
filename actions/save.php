@@ -122,3 +122,4 @@
 	    register_error('meeting:manage:noprivileges');
 	    forward($_SERVER['HTTP_REFERER']);
 	}
+?>

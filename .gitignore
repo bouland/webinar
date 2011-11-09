@@ -1,4 +1,5 @@
 .git/
 *.tar.gz
 *~
+.project
 bbb_api_conf.php

@@ -38,7 +38,7 @@
 		'webinar:meeting:menu:view' => "Voir les meeting du groupe",
 		'webinar:meeting:new' => 'Nouveau meeting virtuel',
 		'webinar:meeting:new:river' => 'Nouveau meeting  virtuel dans le groupe %s',
-		'webinar:meeting:notify:new' => 'Un nouveau meeting ajouté',
+		'webinar:meeting:notify:new' => '[webinar]',
 		'webinar:meeting:notrunning' => "PB le meeting n'existe pas sur le serveur",
 		'webinar:meeting:profilegroup' => 'Meetings du groupe',
 		'webinar:meeting:registered:title' => "Les inscrits au meeting virtuel",

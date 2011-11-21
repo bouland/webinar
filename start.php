@@ -131,7 +131,7 @@
 		$entity = $params['entity'];
 		$to_entity = $params['to_entity'];
 		$method = $params['method'];
-		if (($entity instanceof ElggEntity) && ($entity->getSubtype() == 'groupforumtopic'))
+		if ($entity instanceof ElggMeeting)
 		{
 
 			$descr = $entity->description;

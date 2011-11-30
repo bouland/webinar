@@ -26,7 +26,6 @@
 		register_entity_type('object','meeting');
 		
 		// Listen to notification events and supply a more useful message
-		register_plugin_hook('notify:entity:message', 'object', 'meeting_notify_message');
 		// Register for notifications 
 		if (is_callable('register_notification_object')) {
 			register_notification_object('object', 'meeting', elgg_echo('webinar:meeting:notify:new'));
@@ -36,7 +35,6 @@
 		}
 		//intercept event_calendar notification because event that type is meeting are create by meeting object
 		register_plugin_hook('object:notifications','object','webinar_event_notifications_intercept');
-
 		
 		register_action("meeting/subscribe",false, $CONFIG->pluginspath . "webinar/actions/subscribe.php");
 		register_action("meeting/unsubscribe",false, $CONFIG->pluginspath . "webinar/actions/unsubscribe.php");
@@ -133,27 +131,25 @@
 		$method = $params['method'];
 		if ($entity instanceof ElggMeeting)
 		{
-
-			$descr = $entity->description;
-			$title = $entity->title;
-			global $CONFIG;
-			$url = $entity->getURL();
-
-			$msg = get_input('topicmessage');
-			if (empty($msg)) $msg = get_input('topic_post');
-			if (!empty($msg)) $msg = $msg . "\n\n"; else $msg = '';
-
-			$owner = get_entity($entity->container_guid);
+			$owner = $entity->getOwnerEntity();
 			if ($method == 'sms') {
-				return elgg_echo("groupforumtopic:new") . ': ' . $url . " ({$owner->name}: {$title})";
-			} else {
-				return $_SESSION['user']->name . ' ' . elgg_echo("groups:viagroups") . ': ' . $title . "\n\n" . $msg . "\n\n" . $entity->getURL();
+				return $owner->name . elgg_echo('webinar:meeting:sms') . $entity->title;
+			}
+			if ($method == 'email') {
+				if (is_callable('object_notifications_inria')) {
+					$owner = $entity->getOwnerEntity();
+					return array('to'      => $to_entity->guid,
+											 'from'    => $entity->container_guid,
+											 'subject' => $entity->title,
+											 'message' => $entity->description . "\n\n--\n" . $owner->name  . "\n\n" . $entity->getURL());
+				}else{
+					return $returnvalue;
+				}
 			}
 
 		}
 		return null;
 	}
-
 	function webinar_event_notifications_intercept($hook, $entity_type, $returnvalue, $params) {
 		if (isset($params)) {
 			if ($params['event'] == 'create' && $params['object'] instanceof ElggObject) {
@@ -240,4 +236,3 @@
 			
 		}
 	}
-?>

@@ -78,6 +78,7 @@
 		'webinar:meeting:river:start' => "Le meeting virtuel %s vient de démarrer !!",
 		'webinar:meeting:river:registered:create' => "%s s'est inscrit au meeting",
 		'webinar:meeting:river:attendee:create' => "%s participe au meeting",
+		'webinar:meeting:sms' => " a créé un meeting intitulé ",
 	
 	);
 					

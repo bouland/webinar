@@ -31,11 +31,10 @@
 			
 			$meeting->attend($user);
 			
-			add_to_river('river/relationship/attendee/create','attend',$user->guid,$meeting->guid);
 			// Remove any invite or join request flags
 			remove_entity_relationship($meeting->guid, 'subscribe', $user->guid);
 			// add to river
-			add_to_river('river/relationship/meeting/attend','attend',$user->guid,$meeting->guid);
+			
 		
 			$url = $meeting->joinAdminURL($user);
 			forward($url);

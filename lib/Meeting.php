@@ -179,9 +179,8 @@ function get_next_slot($offset = 0){
 }
 
 function subscribe_meeting($meeting_guid, $user_guid) {
-	$result = add_entity_relationship($user_guid, 'registered', $meeting_guid);
 	trigger_elgg_event('subscribe', 'meeting', array('meeting' => get_entity($meeting_guid), 'user' => get_entity($user_guid)));
-	return $result;
+	return add_entity_relationship($user_guid, 'registered', $meeting_guid);
 }
 function unsubscribe_meeting($meeting_guid, $user_guid) {
 	// event needs to be triggered while user is still member of group to have access to group acl
@@ -190,9 +189,8 @@ function unsubscribe_meeting($meeting_guid, $user_guid) {
 	return $result;
 }
 function attend_meeting($meeting_guid, $user_guid){
-	$result = add_entity_relationship($user_guid, 'attendee', $meeting_guid);
 	trigger_elgg_event('attend', 'meeting', array('meeting' => get_entity($meeting_guid), 'user' => get_entity($user_guid)));
-	return $result;
+	return add_entity_relationship($user_guid, 'attendee', $meeting_guid);
 }
 function is_meeting_registered($meeting_guid, $user_guid) {
 	$object = check_entity_relationship($user_guid, 'registered', $meeting_guid);

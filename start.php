@@ -44,6 +44,7 @@
 		register_action("meeting/start",false, $CONFIG->pluginspath . "webinar/actions/start.php");
 		register_action("meeting/stop",false, $CONFIG->pluginspath . "webinar/actions/stop.php");
 		
+		register_elgg_event_handler('create','attendee','webinar_notify_relationship');
 		
 		elgg_extend_view('groups/left_column', 'meeting/profilegroup');
 		elgg_extend_view('submenu/extend', 'meeting/relationships');
@@ -123,6 +124,12 @@
 			return sprintf(elgg_echo('webinar:meeting:new:river'), $owner->name) . ': ' . $title . "\n\n" . $descr . "\n\n" . $entity->getURL();
 		}
 		return null;
+	}
+	function webinar_notify_relationship($event, $object_type, $object){
+		if ($object instanceof ElggRelationship){
+			add_to_river('river/relationship/attendee/create','attend',$object->guid_one,$object->guid_two);
+		}
+		return true;
 	}
 	function webinar_meeting_notify_message($hook, $entity_type, $returnvalue, $params)
 	{

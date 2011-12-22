@@ -9,16 +9,7 @@
 			$container_guid = page_owner();
 		}
 		$container = get_entity($container_guid);
-		if ($container) {
-			
-			if ($container && $container instanceof ElggGroup){
-				$access_id = $container->group_acl;
-				$write_access_id = $container->group_acl;
-			}else{
-				$access_id = 0;
-				$write_access_id = 0;
-			}
-		} elseif (defined('ACCESS_DEFAULT')){
+		if (defined('ACCESS_DEFAULT')){
 			$access_id = ACCESS_DEFAULT;
 			$write_access_id = ACCESS_DEFAULT;
 		} else {

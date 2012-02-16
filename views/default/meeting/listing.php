@@ -30,5 +30,7 @@
 		) . "</p>";
 	}
 	
-	echo elgg_view_listing($icon, $info);
+	$vars = array_merge( $vars, array('icon' => $icon, 'info' => $info) );
+	
+	echo elgg_view('entities/entity_listing', $vars);
 ?>

@@ -1,6 +1,6 @@
 <?php
 $group = page_owner_entity();
-if ($group && $group instanceof ElggGroup && $group->webinar_enable != 'no'){
+if ($group && $group instanceof ElggGroup && $group->webinar_enable == 'yes'){
 	echo '<li ';
 	if (get_context() == 'webinar') {
 		echo "class='selected'";

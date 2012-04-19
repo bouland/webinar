@@ -1,10 +1,10 @@
 <?php
 //require( dirname(dirname(__FILE__)) . '/vendors/bbb-api-php/bbb_api.php');
 
-class ElggMeeting extends ElggObject {
+class ElggWebinar extends ElggObject {
 	protected function initialise_attributes() {
 		parent::initialise_attributes();
-		$this->attributes['subtype'] = "meeting";
+		$this->attributes['subtype'] = "webinar";
 	}
 
 	public function __construct($guid = null) {
@@ -12,7 +12,7 @@ class ElggMeeting extends ElggObject {
 	}
 	public function create(ElggUser $admin){
 		$server = $this->getServer();
-		return $server->elgg_createMeetingArray($admin);
+		return $server->elgg_createWebinarArray($admin);
 	}
 	public function getServer() {
 		$arg = $this->logoutURL;
@@ -32,16 +32,16 @@ class ElggMeeting extends ElggObject {
 	}
 	public function updateStatus(){
 		$server = $this->getServer();
-		return $server->isMeetingRunning($this->guid, $this->serverURL, $this->serverSalt);
+		return $server->isWebinarRunning($this->guid, $this->serverURL, $this->serverSalt);
 	}
 	public function subscribe(ElggUser $user){
-		return subscribe_meeting($this->guid, $user->guid);
+		return subscribe_webinar($this->guid, $user->guid);
 	}
 	public function unsubscribe(ElggUser $user){
-		return unsubscribe_meeting($this->guid, $user->guid);
+		return unsubscribe_webinar($this->guid, $user->guid);
 	}
 	public function attend(ElggUser $user){
-		return attend_meeting($this->guid, $user->guid);
+		return attend_webinar($this->guid, $user->guid);
 	}
 	public function isAttendee($user = 0) {
 		if (!($user instanceof ElggUser)) {
@@ -50,7 +50,7 @@ class ElggMeeting extends ElggObject {
 		if (!($user instanceof ElggUser)) {
 			return false;
 		}
-		return is_meeting_attendee($this->getGUID(), $user->getGUID());
+		return is_webinar_attendee($this->getGUID(), $user->getGUID());
 	}
 	public function isRegistered($user = 0) {
 		if (!($user instanceof ElggUser)) {
@@ -59,13 +59,13 @@ class ElggMeeting extends ElggObject {
 		if (!($user instanceof ElggUser)) {
 			return false;
 		}
-		return is_meeting_registered($this->getGUID(), $user->getGUID());
+		return is_webinar_registered($this->getGUID(), $user->getGUID());
 	}
 	public function getAttendees($limit = 10, $offset = 0, $count = false) {
-		return get_meeting_relationship('attendee', $this->getGUID(), $limit, $offset, 0 , $count);
+		return get_webinar_relationship('attendee', $this->getGUID(), $limit, $offset, 0 , $count);
 	}
 	public function getRegistereds($limit = 10, $offset = 0, $count = false) {
-		return get_meeting_relationship('registered', $this->getGUID(), $limit, $offset, 0 , $count);
+		return get_webinar_relationship('registered', $this->getGUID(), $limit, $offset, 0 , $count);
 	}
 	public function getRelationShip(){
 		switch($this->status)
@@ -113,23 +113,23 @@ class ElggMeeting extends ElggObject {
 	}
 	public function isCreated(){
 		$server = $this->getServer();
-		$meetings = $server->getMeetings();
-		foreach ($meetings as $meeting){
-			if($meeting->meetingID == $this->guid)
+		$webinars = $server->getWebinars();
+		foreach ($webinars as $webinar){
+			if($webinar->webinarID == $this->guid)
 				return true;
 		}
 		return false;
 	}
-	public function isMeetingRunning(){
+	public function isWebinarRunning(){
 		$server = $this->getServer();
-		return $server->isMeetingRunning($this->guid);
+		return $server->isWebinarRunning($this->guid);
 	}
 	public function stop(){
 		$server = $this->getServer();
-		return $server->elgg_endMeeting();
+		return $server->elgg_endWebinar();
 	}
 	public function getEvent(){
-		return elgg_get_entities_from_relationship(array(	'relationship' => 'meeting',
+		return elgg_get_entities_from_relationship(array(	'relationship' => 'webinar',
 															'relationship_guid' => $this->guid,
 															'inverse_relationship' => TRUE,
 															'type' => 'object',
@@ -178,30 +178,30 @@ function get_next_slot($offset = 0){
 	return $slot;
 }
 
-function subscribe_meeting($meeting_guid, $user_guid) {
-	trigger_elgg_event('subscribe', 'meeting', array('meeting' => get_entity($meeting_guid), 'user' => get_entity($user_guid)));
-	return add_entity_relationship($user_guid, 'registered', $meeting_guid);
+function subscribe_webinar($webinar_guid, $user_guid) {
+	trigger_elgg_event('subscribe', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)));
+	return add_entity_relationship($user_guid, 'registered', $webinar_guid);
 }
-function unsubscribe_meeting($meeting_guid, $user_guid) {
+function unsubscribe_webinar($webinar_guid, $user_guid) {
 	// event needs to be triggered while user is still member of group to have access to group acl
-	trigger_elgg_event('unsubscribe', 'meeting', array('meeting' => get_entity($meeting_guid), 'user' => get_entity($user_guid)));
-	$result = remove_entity_relationship($user_guid, 'registered', $meeting_guid);
+	trigger_elgg_event('unsubscribe', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)));
+	$result = remove_entity_relationship($user_guid, 'registered', $webinar_guid);
 	return $result;
 }
-function attend_meeting($meeting_guid, $user_guid){
-	trigger_elgg_event('attend', 'meeting', array('meeting' => get_entity($meeting_guid), 'user' => get_entity($user_guid)));
-	return add_entity_relationship($user_guid, 'attendee', $meeting_guid);
+function attend_webinar($webinar_guid, $user_guid){
+	trigger_elgg_event('attend', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)));
+	return add_entity_relationship($user_guid, 'attendee', $webinar_guid);
 }
-function is_meeting_registered($meeting_guid, $user_guid) {
-	$object = check_entity_relationship($user_guid, 'registered', $meeting_guid);
+function is_webinar_registered($webinar_guid, $user_guid) {
+	$object = check_entity_relationship($user_guid, 'registered', $webinar_guid);
 	if ($object) {
 		return true;
 	} else {
 		return false;
 	}
 }
-function is_meeting_attendee($meeting_guid, $user_guid) {
-	$object = check_entity_relationship($user_guid, 'attendee', $meeting_guid);
+function is_webinar_attendee($webinar_guid, $user_guid) {
+	$object = check_entity_relationship($user_guid, 'attendee', $webinar_guid);
 	if ($object) {
 		return true;
 	} else {
@@ -209,7 +209,7 @@ function is_meeting_attendee($meeting_guid, $user_guid) {
 	}
 }
 /*
-function get_meeting_relationship($relationship, $meeting_guid, $limit = 10, $offset = 0, $site_guid = 0, $count = false) {
+function get_webinar_relationship($relationship, $webinar_guid, $limit = 10, $offset = 0, $site_guid = 0, $count = false) {
 
 	// in 1.7 0 means "not set."  rewrite to make sense.
 	if (!$site_guid) {
@@ -218,7 +218,7 @@ function get_meeting_relationship($relationship, $meeting_guid, $limit = 10, $of
 
 	return elgg_get_entities_from_relationship(array(
 		'relationship' => $relationship,
-		'relationship_guid' => $meeting_guid,
+		'relationship_guid' => $webinar_guid,
 		'inverse_relationship' => TRUE,
 		'types' => 'user',
 		'limit' => $limit,

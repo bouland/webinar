@@ -6,8 +6,8 @@
 	 */
 
 	// Output body
-	$meeting = $vars['entity'];
-	if ($meeting && $meeting instanceof ElggMeeting) {	
+	$webinar = $vars['entity'];
+	if ($webinar && $webinar instanceof ElggWebinar) {	
 		
 		
 		
@@ -18,14 +18,14 @@
 		}
 		else
 		{
-			$latest = $meeting->getAnnotations('meeting', 1, 0, 'desc');
+			$latest = $webinar->getAnnotations('webinar', 1, 0, 'desc');
 			if ($latest) $latest = $latest[0];
 		}
 	
 		echo '<div class="contentWrapper">';	
-		echo '<div id="meeting_page">';
-		$status = $meeting->status;
-		echo '<h2>' . elgg_echo('webinar:meeting:status:title') . elgg_echo("webinar:meeting:status:{$status}") . '</h2>';
+		echo '<div id="webinar_page">';
+		$status = $webinar->status;
+		echo '<h2>' . elgg_echo('webinar:status:title') . elgg_echo("webinar:status:{$status}") . '</h2>';
 		
 		echo elgg_view('output/longtext', array('value' => /*$entity->description*/ $latest->value));
 		
@@ -42,7 +42,7 @@
 			echo $cats;
 			echo '</p>';
 		}
-		$event = $meeting->getEvent();
+		$event = $webinar->getEvent();
 		if (is_array($event)){
 			echo elgg_view_entity($event[0], false);
 		}

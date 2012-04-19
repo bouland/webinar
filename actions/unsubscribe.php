@@ -4,29 +4,29 @@
 	gatekeeper();
 
 	$user_guid = get_input('user_guid', get_loggedin_userid());
-	$meeting_guid = get_input('meeting_guid');
+	$webinar_guid = get_input('webinar_guid');
 
 	$user = get_entity($user_guid);
-	$meeting = get_entity($meeting_guid);
+	$webinar = get_entity($webinar_guid);
 
-	if (($user instanceof ElggUser) && ($meeting instanceof ElggMeeting))
+	if (($user instanceof ElggUser) && ($webinar instanceof Elggwebinar))
 	{
-		if ($meeting->isRegistered($user)) {
-			if ($meeting->unsubscribe($user)){
-				system_message(elgg_echo("webinar:meeting:unsubscribe:success"));
-				forward($meeting->getURL());
+		if ($webinar->isRegistered($user)) {
+			if ($webinar->unsubscribe($user)){
+				system_message(elgg_echo("webinar:unsubscribe:success"));
+				forward($webinar->getURL());
 				exit;
 			}else{
-				system_message(elgg_echo("webinar:meeting:unsubscribe:failed"));
-				register_error(elgg_echo("webinar:meeting:unsubscribe:failed"));
+				system_message(elgg_echo("webinar:unsubscribe:failed"));
+				register_error(elgg_echo("webinar:unsubscribe:failed"));
 			}
 		}else{
-			system_message(elgg_echo("webinar:meeting:unsubscribe:impossible"));
-			register_error(elgg_echo("webinar:meeting:unsubscribe:impossible"));
+			system_message(elgg_echo("webinar:unsubscribe:impossible"));
+			register_error(elgg_echo("webinar:unsubscribe:impossible"));
 		}
 	}
 	else
-		register_error(elgg_echo("webinar:meeting:unsubscribe:crash"));
+		register_error(elgg_echo("webinar:unsubscribe:crash"));
 
 	forward($_SERVER['HTTP_REFERER']);
 	exit;

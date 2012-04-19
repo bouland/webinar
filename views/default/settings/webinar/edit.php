@@ -1,6 +1,6 @@
 <?php
 	global $CONFIG;
-	include dirname(dirname(dirname(dirname(dirname(__FILE__))))) . '/bbb_api_conf.php';
+	include $_SERVER['DOCUMENT_ROOT'] . '/bbb_api_conf.php';
 	$plugin = find_plugin_settings('webinar');
 ?>
 <p>

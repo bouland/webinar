@@ -1,22 +1,22 @@
 <?php
 
-	$meeting_guid = get_input('meeting_guid');
+	$webinar_guid = get_input('webinar_guid');
 	
-	if ($meeting = get_entity($meeting_guid)) {
+	if ($webinar = get_entity($webinar_guid) && $webinar instanceof ElggWebinar) {
 		
-		if ($meeting->canEdit()) {
+		if ($webinar->canEdit()) {
 
-			$container = get_entity($meeting->container_guid);
+			$container = get_entity($webinar->container_guid);
 			
-			foreach($meeting->getEvent() as $event){
+			foreach($webinar->getEvent() as $event){
 				$event->delete();
 			}
 			
-			if ($meeting->delete()) {
-				system_message(elgg_echo('webinar:meeting:delete:success'));
+			if ($webinar->delete()) {
+				system_message(elgg_echo('webinar:delete:success'));
 				
 				set_page_owner($container->guid);
-				forward("pg/meeting/owned/{$container->username}");
+				forward("pg/webinar/owned/{$container->username}");
 			}
 			
 		}

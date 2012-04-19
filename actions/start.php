@@ -6,24 +6,24 @@
 
 	gatekeeper();
 
-	$meeting_guid = get_input('meeting_guid');
+	$webinar_guid = get_input('webinar_guid');
 	
-	$meeting = get_entity($meeting_guid);
 	
-	if ($meeting && $meeting instanceof ElggMeeting){
+	
+	if ( ($webinar = get_entity($webinar_guid)) && $webinar instanceof ElggWebinar){
 		
-		if (!$meeting->isDone()){
-			$meeting->status = 'running';
-			$meeting->save();
+		if (!$webinar->isDone()){
+			$webinar->status = 'running';
+			$webinar->save();
 			
-			add_to_river('river/object/meeting/start','start',get_loggedin_userid(),$meeting->guid);
+			add_to_river('river/object/webinar/start','start',get_loggedin_userid(),$webinar->guid);
 			
 		}else{
-			system_message(elgg_echo("webinar:meeting:isDone"));
+			system_message(elgg_echo("webinar:isDone"));
 		}
 		
 	}else{
-		register_error(elgg_echo("webinar:meeting:start:failed"));
+		register_error(elgg_echo("webinar:start:failed"));
 	}
 	forward($_SERVER['HTTP_REFERER']);
 	exit;

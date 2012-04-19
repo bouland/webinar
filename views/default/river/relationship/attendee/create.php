@@ -5,7 +5,7 @@
 	$objecturl = $object->getURL();
 
 	$url = "<a href=\"{$performed_by->getURL()}\">{$performed_by->name}</a>";
-	$string = sprintf(elgg_echo("webinar:meeting:river:attendee:create"),$url) . " ";
+	$string = sprintf(elgg_echo("webinar:river:attendee:create"),$url) . " ";
 	$string .= " <a href=\"" . $object->getURL() . "\">" . $object->title . "</a>";
 
 ?>

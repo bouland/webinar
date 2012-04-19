@@ -1,20 +1,20 @@
 <?php
 
-include_once(dirname(dirname(dirname(__FILE__))) . "/engine/start.php");
+include_once( $_SERVER['DOCUMENT_ROOT'] . "/engine/start.php");
 
 $relationship = get_input('relationship');
-$meeting_guid = (int) get_input('meeting_guid');
-$meeting = get_entity($meeting_guid);
+$webinar_guid = (int) get_input('webinar_guid');
+$webinar = get_entity($webinar_guid);
 
-if($meeting instanceof ElggMeeting) {
-	set_page_owner($meeting->container_guid);
-	webinar_meeting_submenu($meeting);
+if($webinar instanceof ElggWebinar) {
+	set_page_owner($webinar->container_guid);
+	webinar_submenu($webinar);
 	
-	$title = sprintf(elgg_echo("webinar:meeting:{$relationship}:title"), $meeting->title);
+	$title = sprintf(elgg_echo("webinar:{$relationship}:title"), $webinar->title);
 	
 	$area2 = elgg_view_title($title);
 	
-	$area2 .= elgg_list_entities_from_relationship($meeting->getRelationShipOptions($relationship));
+	$area2 .= elgg_list_entities_from_relationship($webinar->getRelationShipOptions($relationship));
 }
 
 $body = elgg_view_layout('two_column_left_sidebar', '', $area2);

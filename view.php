@@ -5,30 +5,31 @@
 	 * @package ElggPages
 	 */
 
-	require_once(dirname(dirname(dirname(__FILE__))) . "/engine/start.php");
+	require_once($_SERVER['DOCUMENT_ROOT'] . "/engine/start.php");
 
-	$meeting_guid = get_input('meeting_guid');
-	set_context('meeting');
+	$webinar_guid = get_input('webinar_guid');
+	set_context('webinar');
 	
-	$meeting = get_entity($meeting_guid);
-	if (!$meeting) forward();
+	$webinar = get_entity($webinar_guid);
+	if (!$webinar) forward();
 
-	$container = $meeting->container_guid;
+	$container = $webinar->container_guid;
 
 	if ($container) {
 		set_page_owner($container);
 	} else {
-		set_page_owner($meeting->owner_guid);
+		set_page_owner($webinar->owner_guid);
 	}
-	webinar_meeting_submenu($meeting);
 	
-	$title = $meeting->title;
+	webinar_submenu($webinar);
+	
+	$title = $webinar->title;
 
-	$body .= elgg_view_title($meeting->title);
-	$body .= elgg_view_entity($meeting, true);
+	$body .= elgg_view_title($webinar->title);
+	$body .= elgg_view_entity($webinar, true);
 
 	//add comments
-	$body .= elgg_view_comments($meeting);
+	$body .= elgg_view_comments($webinar);
 
 	$body = elgg_view_layout('two_column_left_sidebar', '', $body, '');
 

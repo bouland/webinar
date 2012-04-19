@@ -2,4 +2,6 @@
 *.tar.gz
 *~
 .project
+.buildpath
+.settings
 bbb_api_conf.php

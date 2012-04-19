@@ -4,35 +4,35 @@
 	gatekeeper();
 
 	$user_guid = get_input('user_guid', get_loggedin_userid());
-	$meeting_guid = get_input('meeting_guid');
+	$webinar_guid = get_input('webinar_guid');
 
 	$user = get_entity($user_guid);
-	$meeting = get_entity($meeting_guid);
+	$webinar = get_entity($webinar_guid);
 
-	if (($user instanceof ElggUser) && ($meeting instanceof ElggMeeting))
+	if (($user instanceof ElggUser) && ($webinar instanceof ElggWebinar))
 	{
-		if (!$meeting->isAttendee($user)) {
-			if (!$meeting->isRegistered($user)) {
-				if ($meeting->subscribe($user))
+		if (!$webinar->isAttendee($user)) {
+			if (!$webinar->isRegistered($user)) {
+				if ($webinar->subscribe($user))
 				{
-					add_to_river('river/relationship/registered/create','register',$user->guid,$meeting->guid);
+					add_to_river('river/relationship/registered/create','register',$user->guid,$webinar->guid);
 					
-					system_message(elgg_echo("webinar:meeting:subscribe:success"));
+					system_message(elgg_echo("webinar:subscribe:success"));
 		
-					forward($meeting->getURL());
+					forward($webinar->getURL());
 					exit;
 				}else{
-					system_message(elgg_echo("webinar:meeting:subscribe:failed"));
-					register_error(elgg_echo("webinar:meeting:subscribe:failed"));
+					system_message(elgg_echo("webinar:subscribe:failed"));
+					register_error(elgg_echo("webinar:subscribe:failed"));
 				}
 			}else{
-				system_message(elgg_echo("webinar:meeting:subscribe:duplicate"));
-				register_error(elgg_echo("webinar:meeting:subscribe:duplicate"));
+				system_message(elgg_echo("webinar:subscribe:duplicate"));
+				register_error(elgg_echo("webinar:subscribe:duplicate"));
 			}
 		}
 	}
 	else
-		register_error(elgg_echo("webinar:meeting:subscribe:crash"));
+		register_error(elgg_echo("webinar:subscribe:crash"));
 
 	forward($_SERVER['HTTP_REFERER']);
 	exit;

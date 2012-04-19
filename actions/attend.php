@@ -4,21 +4,21 @@
 	gatekeeper();
 
 	$user_guid = get_input('user_guid', get_loggedin_userid());
-	$meeting_guid = get_input('meeting_guid');
+	$webinar_guid = get_input('webinar_guid');
 
 	$user = get_entity($user_guid);
-	$meeting = get_entity($meeting_guid);
+	$webinar = get_entity($webinar_guid);
 
-	if (($user instanceof ElggUser) && ($meeting instanceof ElggMeeting))
+	if (($user instanceof ElggUser) && ($webinar instanceof ElggWebinar))
 	{
-		if ($meeting->isRunning()){
-			$response = $meeting->create(get_loggedin_user());
+		if ($webinar->isRunning()){
+			$response = $webinar->create(get_loggedin_user());
 			if(!$response){//If the server is unreachable
-				$message = elgg_echo('webinar:meeting:start:timeout');
+				$message = elgg_echo('webinar:start:timeout');
 			}
 			else if( $response['returncode'] == 'FAILED' ) { //The meeting was not created
 				if($response['messageKey'] == 'checksumError'){
-					$message = elgg_echo("webinar:meeting:start:salterror");
+					$message = elgg_echo("webinar:start:salterror");
 				}else{
 					$message = $response['message'];
 				}				
@@ -29,21 +29,21 @@
 				forward();
 			}
 			
-			$meeting->attend($user);
+			$webinar->attend($user);
 			
 			// Remove any invite or join request flags
-			remove_entity_relationship($meeting->guid, 'subscribe', $user->guid);
+			remove_entity_relationship($webinar->guid, 'subscribe', $user->guid);
 			// add to river
 			
 		
-			$url = $meeting->joinAdminURL($user);
+			$url = $webinar->joinAdminURL($user);
 			forward($url);
 			
 		}
 		
 	}
 	else
-		register_error(elgg_echo("webinar:meeting:attend:crash"));
+		register_error(elgg_echo("webinar:attend:crash"));
 
 	forward($_SERVER['HTTP_REFERER']);
 	exit;

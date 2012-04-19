@@ -1,29 +1,24 @@
 <?php
-	require_once(dirname(dirname(dirname(__FILE__))) . "/engine/start.php");
+	require_once( $_SERVER['DOCUMENT_ROOT'] . "/engine/start.php");
 	
 	gatekeeper();
 	
-	$page_owner_guid = page_owner();
-
-	// Get the meeting, if it exists
-	$meeting_guid = (int) get_input('meeting_guid');
+	// Get the webinar, if it exists
+	$webinar_guid = (int) get_input('webinar_guid');
 		
-	if ($meeting = get_entity($meeting_guid)) {
+	if (($webinar = get_entity($webinar_guid)) && $webinar instanceof ElggWebinar) {
 
-		set_context('meeting');
-		
 		if ($page_owner_guid == 0) {
-			set_page_owner($meeting->container_guid);
+			set_page_owner($webinar->container_guid);
 		}
 		
-		webinar_meeting_submenu($meeting);
+		if ($webinar->canEdit()) {
 		
-		if ($meeting->canEdit()) {
-		
+			webinar_submenu($webinar);
 			// Render the file upload page
-			$title = elgg_echo("webinar:meeting:edit");
+			$title = elgg_echo("webinar:edit");
 			$area2 = elgg_view_title($title);
-			$area2 .= elgg_view("forms/meeting/edit", array('entity' => $meeting));
+			$area2 .= elgg_view("forms/webinar/edit", array('entity' => $webinar));
 
 		}
 

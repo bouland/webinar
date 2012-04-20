@@ -164,7 +164,7 @@
 		$page_owner = page_owner_entity();
 			
 		if ($page_owner instanceof ElggGroup && get_context() == 'groups') {
-			if($page_owner->webinar_enable != "no"){
+			if($page_owner->webinar_enable == "yes"){
 				if ($page_owner->canEdit()){
 				    //add_submenu_item(sprintf(elgg_echo("blog:group"),$page_owner->name), $CONFIG->wwwroot . "pg/blog/owner/" . $page_owner->username);
 				    add_submenu_item(elgg_echo('webinar:group:menu:new'),$CONFIG->wwwroot."pg/webinar/new/". $page_owner->username);

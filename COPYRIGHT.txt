@@ -1,8 +1,0 @@
-The follow individuals, companies, or entities have contributed significant 
-code to the Webinar project and share the copyright. (In alphabetical order.)
-
-Organizations:
-INRIA (www.inria.fr)
-
-Individuals:
-Simon Bouland (simon.bouland@gmail.com)

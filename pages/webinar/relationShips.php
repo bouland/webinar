@@ -3,7 +3,7 @@
 include_once( $_SERVER['DOCUMENT_ROOT'] . "/engine/start.php");
 
 $relationship = get_input('relationship');
-$webinar_guid = (int) get_input('webinar_guid');
+$webinar_guid = (int) get_input('guid');
 $webinar = get_entity($webinar_guid);
 
 if($webinar instanceof ElggWebinar) {

@@ -17,7 +17,6 @@ function webinar_prepare_form_vars($webinar = null) {
 			'title' => '',
 			'description' => '',
 			'access_id' => ACCESS_DEFAULT,
-			'write_access_id' => ACCESS_DEFAULT,
 			'tags' => '',
 			'status' => 'upcoming',
 			'welcome_msg' => '',
@@ -49,7 +48,13 @@ function webinar_prepare_form_vars($webinar = null) {
 
 	return $values;
 }
-
+elgg_set_config('pages', array(
+		'title' => 'text',
+		'description' => 'longtext',
+		'tags' => 'tags',
+		'access_id' => 'access',
+		'write_access_id' => 'write_access',
+));
 function webinar_get_free_slots($container_guid, $limit = 1){
 	$slots = array();
 	$offset = 0;
@@ -85,18 +90,29 @@ function webinar_get_next_slot($offset = 0){
 }
 
 function webinar_subscribe($webinar_guid, $user_guid) {
-	trigger_elgg_event('subscribe', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)));
-	return add_entity_relationship($user_guid, 'registered', $webinar_guid);
+	$result = elgg_trigger_plugin_hook('webinar:subscribe', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)),true);
+	if($result){
+		return add_entity_relationship($user_guid, 'registered', $webinar_guid);
+	}else{
+		return false;
+	}
 }
 function webinar_unsubscribe($webinar_guid, $user_guid) {
-	// event needs to be triggered while user is still member of group to have access to group acl
-	trigger_elgg_event('unsubscribe', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)));
-	$result = remove_entity_relationship($user_guid, 'registered', $webinar_guid);
-	return $result;
+	$result = elgg_trigger_plugin_hook('webinar:unsubscribe', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)),true);
+	if($result){
+		return remove_entity_relationship($user_guid, 'registered', $webinar_guid);
+	}else{
+		return false;
+	}
 }
-function webinar_attend($webinar_guid, $user_guid){
-	trigger_elgg_event('attend', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)));
-	return add_entity_relationship($user_guid, 'attendee', $webinar_guid);
+function webinar_join($webinar_guid, $user_guid){
+	$result = elgg_trigger_plugin_hook('webinar:join', 'webinar', array('webinar' => get_entity($webinar_guid), 'user' => get_entity($user_guid)),true);
+	if($result){
+		remove_entity_relationship($user_guid, 'registered', $webinar_guid);
+		return add_entity_relationship($user_guid, 'attendee', $webinar_guid);
+	}else{
+		return false;
+	}
 }
 function webinar_is_registered($webinar_guid, $user_guid) {
 	$object = check_entity_relationship($user_guid, 'registered', $webinar_guid);

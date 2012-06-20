@@ -1,84 +1,68 @@
 <?php
 
-	global $CONFIG;
-	gatekeeper();
-	
-	$container_guid = (int) get_input('container_guid');
-	$container = get_entity($container_guid);
-    $owner_guid = (int) get_input('owner_guid');
-    if ($owner_guid == 0) {
-		$owner_guid = get_loggedin_userid();
-    }
-    $webinar_guid = get_input('webinar_guid');
-    $access_id= (int)get_input('access_id', ACCESS_PRIVATE);
-    $write_access_id = (int)get_input('write_access_id', ACCESS_PRIVATE);
-    $title = get_input('title');
-    $description = get_input('description');
-	$tagarray = get_input('tags');
-	
-	$serverSalt = get_input('serverSalt'); // the security salt; gets encrypted with sha1
-	$serverURL = get_input('serverURL'); // the url the bigbluebutton server is installed
+elgg_load_library('elgg:webinar');
 
-	$logoutURL = get_input('logoutURL');
-	
-	$welcomeString = get_input('welcomeString');
-	// the next 2 fields are maybe not needed?!?
-	$adminPwd = get_input('adminPwd');// the moderator password 
-	$userPwd = get_input('userPwd'); // the attendee pw
+$variables = webinar_prepare_form_vars();
+$input = array();
+foreach (array_keys($variables) as $field) {
+	$input[$field] = get_input($field);
+	if ($field == 'title') {
+		$input[$field] = strip_tags($input[$field]);
+	}
+	if ($field == 'tags') {
+		$input[$field] = string_to_tag_array($input[$field]);
+	}
+}
 
-	$status = get_input('status');
+elgg_make_sticky_form('webinar');
 
-	$isDated = get_input('isDated');
-	$slots = $_SESSION['webinarslots'];
-	$index = get_input('slot', 0);
+if (!$input['title']) {
+	register_error(elgg_echo('webinar:error:no_title'));
+	forward(REFERER);
+}
+
+
+if (sizeof($input) > 0) {
 	
-	$_SESSION['webinartitle'] = $title;
-	$_SESSION['webinardesc'] = $description;
-	$_SESSION['webinartags'] = $tagarray;
+	if(isset($input[guid]) && !empty($input[guid])){
+		$webinar = get_entity($input[guid]);
+		if (!$webinar || !$webinar->canEdit()) {
+			register_error(elgg_echo('webinar:error:no_save'));
+			forward(REFERER);
+		}
+		$new_webinar = false;
+	}else{
+		$webinar = new ElggWebinar();
+		$new_webinar = true;
+	}
 	
-	if ($container->canEdit()) {
+	foreach ($input as $field => $value) {
+		$webinar->$field = $value;
+	}
+	
+	if ($webinar->save()) {
+	
+		elgg_clear_sticky_form('webinar');
+	
+		system_message(elgg_echo('webinar:saved'));
+	
 		
-	    $webinar = new ElggWebinar($webinar_guid);
-	    //$webinar->subtype = 'webinar';
-	    $webinar->access_id = $access_id;
-		$webinar->write_access_id = $write_access_id;
-	    $webinar->title = $title;
-	    $webinar->description = $description;
-	    $webinar->owner_guid = $owner_guid;
-		$webinar->container_guid = $container_guid;
-		$webinar->serverSalt = $serverSalt;
-		$webinar->serverURL = $serverURL;
-		$webinar->welcomeString = $welcomeString;
-		$webinar->adminPwd = $adminPwd;
-		$webinar->userPwd = $userPwd;
-		//STATE : upcoming, running, done, cancel
-		$webinar->status = $status;
-					
-		
-		if (!$webinar->save()) {
-			register_error(elgg_echo("webinar:save:failed"));
-			forward(get_input('forward_url', $_SERVER['HTTP_REFERER'])); //failed, so forward to previous page
-		}
-		
-		if (!is_array($tagarray)) {
-			$tagarray = string_to_tag_array($tagarray);
-		}
-		$webinar->clearMetadata('tags');
-		$webinar->tags = $tagarray;
-		
-		$webinar->annotate('webinar', $webinar->description, $webinar->access_id);
-		
-		if (empty($logoutURL))
-			$webinar->logoutURL = $CONFIG->url . 'pg/webinar/view/' . $webinar->guid;
-		if (empty($webinar_guid)){
-			add_to_river('river/object/webinar/create', 'create', get_loggedin_userid(), $webinar->guid);
-		}
+		if ($new_webinar) {
+			$webinar->logout_url = $webinar->getURL();
+			$webinar->save();
 			
-		// Remove the webinar post cache
-		unset($_SESSION['tidypicstitle']); 
-		unset($_SESSION['tidypicsbody']); 
-		unset($_SESSION['tidypicstags']);
+			//add_to_river('river/object/webinar/create', 'create', elgg_get_logged_in_user_guid(), $webinar->getGUID());
+		}
 		
+		forward($webinar->getURL());
+	}
+}
+
+register_error(elgg_echo('pages:error:no_save'));
+forward(REFERER);
+
+	
+/*
 		if (is_plugin_enabled('event_calendar')){
 			if ($isDated && is_array($slots)){
 				$slot = $slots[$index];
@@ -115,11 +99,4 @@
 				}
 			}
 		}
-
-		forward("pg/webinar/view/" . $webinar->guid);
-
-	} else {
-	    register_error('webinar:manage:noprivileges');
-	    forward($_SERVER['HTTP_REFERER']);
-	}
-?>
+*/

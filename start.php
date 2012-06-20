@@ -12,7 +12,6 @@
 	
 	/**
 	 * Initialize the webinar plugin.
-	 *
 	 */
 	function webinar_init(){
 		
@@ -34,7 +33,7 @@
 		$action_base = elgg_get_plugins_path() . 'webinar/actions/webinar';
 		elgg_register_action("webinar/subscribe", "$action_base/subscribe.php");
 		elgg_register_action("webinar/unsubscribe", "$action_base/unsubscribe.php");
-		elgg_register_action("webinar/attend", "$action_base/attend.php");
+		elgg_register_action("webinar/join", "$action_base/join.php");
 		elgg_register_action("webinar/save", "$action_base/save.php");
 		elgg_register_action("webinar/delete", "$action_base/delete.php");
 		elgg_register_action("webinar/start", "$action_base/start.php");
@@ -47,16 +46,22 @@
 		elgg_register_entity_type('object','webinar');
 		
 		//register_elgg_event_handler('pagesetup','system','webinar_pagesetup');
+		// Register for notifications
+		register_notification_object('object', 'webinar', elgg_echo('webinar:notify:new'));
 		
 		// add checkbox on group edit page to activate webinar
 		add_group_tool_option('webinar',elgg_echo('webinar:enable'),false);
 		
+		elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'webinar_menu_owner_block');
+		// entity menu
+		elgg_register_plugin_hook_handler('register', 'menu:entity', 'webinar_menu_entity');
+		// title menu
+		elgg_register_plugin_hook_handler('register', 'menu:title', 'webinar_menu_title');
 		
-		// Register for notifications 
-		register_notification_object('object', 'webinar', elgg_echo('webinar:notify:new'));
-			
 		// Listen to notification events and supply a more useful message
 		elgg_register_plugin_hook_handler('notify:entity:message', 'object', 'webinar_handler_notify_message');
+		
+		elgg_register_plugin_hook_handler('permissions_check', 'object', 'webinar_handler_permissions_check');
 		
 		//intercept event_calendar notification because event that type is webinar are create by webinar object
 		elgg_register_plugin_hook_handler('object:notifications','object','webinar_handler_notifications_intercept');
@@ -89,8 +94,7 @@
 	function webinar_page_handler($page){
 	
 		elgg_load_library('elgg:webinar');
-		elgg_load_library('elgg:bbb');
-
+		
 		if (!isset($page[0])) {
 			$page[0] = 'all';
 		}
@@ -154,18 +158,93 @@
 		return true;
 	}
 	/**
-	 * Extend container permissions checking to extend can_write_to_container for write users.
-	 *
-	 * @param unknown_type $hook
-	 * @param unknown_type $entity_type
-	 * @param unknown_type $returnvalue
-	 * @param unknown_type $params
+	 * Add a menu item to the user ownerblock
 	 */
-	function webinar_handler_relationship_river($event, $object_type, $object){
-		if ($object instanceof ElggRelationship){
-			add_to_river('river/relationship/attendee/create','attend',$object->guid_one,$object->guid_two);
+	function webinar_menu_owner_block($hook, $type, $return, $params) {
+		if (elgg_instanceof($params['entity'], 'user')) {
+			$url = "webinar/owner/{$params['entity']->username}";
+			$item = new ElggMenuItem('webinar', elgg_echo('pages'), $url);
+			$return[] = $item;
+		} else {
+			if ($params['entity']->webinar_enable != "no") {
+				$url = "webinar/group/{$params['entity']->guid}/all";
+				$item = new ElggMenuItem('webinar', elgg_echo('webinar:group'), $url);
+				$return[] = $item;
+			}
 		}
-		return true;
+	
+		return $return;
+	}
+	/**
+	 * Add specific webinar links/info to entity menu.
+	 */
+	function webinar_menu_entity($hook, $type, $return, $params) {
+		if (elgg_in_context('widgets')) {
+			return $return;
+		}
+	
+		$entity = $params['entity'];
+		$handler = elgg_extract('handler', $params, false);
+		if ($handler != 'webinar') {
+			return $return;
+		}
+		
+		// status
+		$status = elgg_view('output/status', array('entity' => $entity));
+		$options = array(
+				'name' => 'status',
+				'text' => $status,
+				'href' => false,
+				'priority' => 50,
+		);
+		$return[] = ElggMenuItem::factory($options);
+		
+		// remove delete if not owner or admin
+		if (!elgg_is_admin_logged_in() && elgg_get_logged_in_user_guid() != $entity->getOwnerGuid()) {
+			foreach ($return as $index => $item) {
+				if ($item->getName() == 'delete') {
+					unset($return[$index]);
+				}
+			}
+		}
+	
+		return $return;
+	}
+	/**
+	 * Add specific webinar action to title menu on view page
+	 */
+	function webinar_menu_title($hook, $type, $return, $params) {
+		if (elgg_in_context('widgets')) {
+			return $return;
+		}
+	
+		$entity = $params['entity'];
+		$handler = elgg_extract('handler', $params, false);
+		if ($handler != 'webinar') {
+			return $return;
+		}
+		if (elgg_is_logged_in()) {
+		
+			if (!$handler) {
+				$handler = elgg_get_context();
+			}
+		
+			$page_owner = elgg_get_page_owner_entity();
+			if (!$page_owner) {
+				// no owns the page so this is probably an all site list page
+				$page_owner = elgg_get_logged_in_user_entity();
+			}
+			if ($page_owner && $page_owner->canWriteToContainer()) {
+				$options = array(	'name' => 'start',
+							'href' => "action/webinar/start/{$entity->guid}",
+							'text' => elgg_echo("webinar:start"),
+							'link_class' => 'elgg-button elgg-button-action',
+						);
+				$return[] = ElggMenuItem::factory($options);
+			}
+		}
+		
+		return $return;
 	}
 	function webinar_handler_notify_message($hook, $entity_type, $returnvalue, $params)
 	{
@@ -205,74 +284,24 @@
 		}
 		return null;
 	}
-	function webinar_pagesetup() {
-			
-		global $CONFIG;
-
-		//add submenu options
-		
-			
-		// Group submenu
-		$page_owner = page_owner_entity();
-			
-		if ($page_owner instanceof ElggGroup && get_context() == 'groups') {
-			if($page_owner->webinar_enable == "yes"){
-				if ($page_owner->canEdit()){
-				    //add_submenu_item(sprintf(elgg_echo("blog:group"),$page_owner->name), $CONFIG->wwwroot . "pg/blog/owner/" . $page_owner->username);
-				    add_submenu_item(elgg_echo('webinar:group:menu:new'),$CONFIG->wwwroot."pg/webinar/new/". $page_owner->username);
+	function webinar_handler_permissions_check($hook, $entity_type, $returnvalue, $params) {
+		if (isset($params)) {
+			$entity = $params['entity'];
+			$user = $params['user'];
+			if ($entity && $entity instanceof ElggWebinar
+			    &&  $user && $user instanceof ElggUser) {
+				if($entity->getOwnerGUID() == $user->getGUID()){
+					$returnvalue = true;
+				}else{
+					$returnvalue = false;
 				}
-		    }
+			}
 		}
+		return $returnvalue;
 	}
 	function webinar_url($entity){
 		global $CONFIG;
 		$title = $entity->title;
 		$title = elgg_get_friendly_title($title);
 		return $CONFIG->url . "pg/webinar/view/" . $entity->getGUID() . "/" . $title;
-	}
-	function webinar_submenu(ElggWebinar $webinar){
-		global $CONFIG;
-		if (isloggedin()) {
-			
-			if (!$webinar->isRunning() && !$webinar->isDone()){
-				if (!$webinar->isAttendee(get_loggedin_user())) {
-					if ($webinar->isRegistered(get_loggedin_user())) {
-						//unsubscribe
-						$unsubscribe_url = elgg_add_action_tokens_to_url("{$CONFIG->wwwroot}action/webinar/unsubscribe?webinar_guid={$webinar->getGUID()}");
-						add_submenu_item(elgg_echo('webinar:menu:unsubscribe'), $unsubscribe_url, 'webinaractions');
-					} else {
-						//subscribe
-						$subscribe_url = elgg_add_action_tokens_to_url("{$CONFIG->wwwroot}action/webinar/subscribe?webinar_guid={$webinar->getGUID()}");
-						add_submenu_item(elgg_echo('webinar:menu:subscribe'), $subscribe_url, 'webinaractions');
-					}
-				}
-			}elseif($webinar->isRunning()){
-				//attend
-				$attend_url = elgg_add_action_tokens_to_url("{$CONFIG->wwwroot}action/webinar/attend?webinar_guid={$webinar->getGUID()}");
-				add_submenu_item(elgg_echo('webinar:menu:attend'), $attend_url, 'webinaractions');
-			}
-			$container = get_entity($webinar->container_guid);
-			if ($webinar->canEdit()){
-				//edit
-				add_submenu_item(elgg_echo('webinar:menu:edit'),"{$CONFIG->wwwroot}pg/webinar/edit/{$webinar->getGUID()}", 'webinaradmin');
-				if (!$webinar->isRunning() & !$webinar->isDone()){
-					//start
-					$start_url = elgg_add_action_tokens_to_url("{$CONFIG->wwwroot}action/webinar/start?webinar_guid={$webinar->getGUID()}");
-					add_submenu_item(elgg_echo('webinar:menu:start'), $start_url, 'webinaradmin');
-					//delete
-					$delete_url = elgg_add_action_tokens_to_url("{$CONFIG->wwwroot}action/webinar/delete?webinar_guid={$webinar->getGUID()}");
-					add_submenu_item(elgg_echo('webinar:menu:delete'), $delete_url, 'webinaradmin', true);
-				}
-				if ($webinar->isRunning()){
-					//stop
-					$stop_url = elgg_add_action_tokens_to_url("{$CONFIG->wwwroot}action/webinar/stop?webinar_guid={$webinar->getGUID()}");
-					add_submenu_item(elgg_echo('webinar:menu:stop'), $stop_url, 'webinaradmin');
-				}
-				//new
-				if ($container instanceof ElggGroup)		
-		    		add_submenu_item(elgg_echo('webinar:menu:new'),$CONFIG->wwwroot."pg/webinar/new/" . $container->username, 'webinaradmin2');
-					
-			}
-			
-		}
 	}

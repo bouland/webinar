@@ -21,8 +21,7 @@ class ElggWebinar extends ElggObject {
 		return $server->elgg_createWebinarArray($admin);
 	}
 	public function getServer() {
-		$arg = $this->logoutURL;
-		return new BigBlueButton($this->adminname, $this->guid, $this->welcomeString, $this->adminPwd, $this->userPwd, $this->serverSalt, $this->serverURL, $this->logoutURL);
+		return new BigBlueButton('adminname', $this->guid, $this->welcome_msg, $this->admin_pwd, $this->user_pwd, $this->server_salt, $this->server_url, $this->logout_url);
 	}
 	public function isRunning(){
 		return $this->status == 'running';
@@ -38,34 +37,36 @@ class ElggWebinar extends ElggObject {
 	}
 	public function updateStatus(){
 		$server = $this->getServer();
-		return $server->isWebinarRunning($this->guid, $this->serverURL, $this->serverSalt);
+		return $server->isWebinarRunning($this->guid, $this->server_url, $this->server_salt);
 	}
 	public function subscribe(ElggUser $user){
-		return subscribe_webinar($this->guid, $user->guid);
+		return webinar_subscribe($this->guid, $user->guid);
 	}
 	public function unsubscribe(ElggUser $user){
-		return unsubscribe_webinar($this->guid, $user->guid);
+		return webinar_unsubscribe($this->guid, $user->guid);
 	}
-	public function attend(ElggUser $user){
-		return attend_webinar($this->guid, $user->guid);
+	public function join(ElggUser $user){
+		return webinar_join($this->guid, $user->guid);
 	}
 	public function isAttendee($user = 0) {
-		if (!($user instanceof ElggUser)) {
-			$user = get_loggedin_user();
+			if (!($user && $user instanceof ElggUser)) {
+			$user = elgg_get_logged_in_user_entity();
 		}
-		if (!($user instanceof ElggUser)) {
+		if ($user && $user instanceof ElggUser) {
+			return webinar_is_attendee($this->getGUID(), $user->getGUID());
+		}else{
 			return false;
 		}
-		return is_webinar_attendee($this->getGUID(), $user->getGUID());
 	}
-	public function isRegistered($user = 0) {
-		if (!($user instanceof ElggUser)) {
-			$user = get_loggedin_user();
+	public function isRegistered($user = null) {
+		if (!($user && $user instanceof ElggUser)) {
+			$user = elgg_get_logged_in_user_entity();
 		}
-		if (!($user instanceof ElggUser)) {
+		if ($user && $user instanceof ElggUser) {
+			return webinar_is_registered($this->getGUID(), $user->getGUID());
+		}else{
 			return false;
 		}
-		return is_webinar_registered($this->getGUID(), $user->getGUID());
 	}
 	public function getAttendees($limit = 10, $offset = 0, $count = false) {
 		return get_webinar_relationship('attendee', $this->getGUID(), $limit, $offset, 0 , $count);
@@ -111,11 +112,11 @@ class ElggWebinar extends ElggObject {
 	}
 	public function joinURL(ElggUser $user){
 		$server = $this->getServer();
-		return $server->elgg_joinURL($this->guid, $user->name, $this->userPwd);
+		return $server->elgg_joinURL($this->guid, $user->name, $this->user_pwd);
 	}
 	public function joinAdminURL(ElggUser $admin){
 		$server = $this->getServer();
-		return  $server->elgg_joinURL($this->guid, $admin->name, $this->adminPwd);
+		return  $server->elgg_joinURL($this->guid, $admin->name, $this->admin_pwd);
 	}
 	public function isCreated(){
 		$server = $this->getServer();

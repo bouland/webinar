@@ -3,7 +3,7 @@
 
 	gatekeeper();
 
-	$user_guid = get_input('user_guid', get_loggedin_userid());
+	$user_guid = get_input('user_guid', elgg_get_logged_in_user_guid());
 	$webinar_guid = get_input('webinar_guid');
 
 	$user = get_entity($user_guid);
@@ -11,8 +11,10 @@
 
 	if (($user instanceof ElggUser) && ($webinar instanceof ElggWebinar))
 	{
+		elgg_load_library('elgg:webinar');
+		elgg_load_library('elgg:bbb');
 		if ($webinar->isRunning()){
-			$response = $webinar->create(get_loggedin_user());
+			$response = $webinar->create($user);
 			if(!$response){//If the server is unreachable
 				$message = elgg_echo('webinar:start:timeout');
 			}
@@ -26,14 +28,11 @@
 			if($message){
 				system_message($message);
 				register_error($message);
-				forward();
+				forward(REFERER);
 			}
 			
-			$webinar->attend($user);
-			
-			// Remove any invite or join request flags
-			remove_entity_relationship($webinar->guid, 'subscribe', $user->guid);
-			// add to river
+			$webinar->join($user);
+			//add_to_river('river/relationship/attendee/create','register',$user->guid,$webinar->guid);
 			
 		
 			$url = $webinar->joinAdminURL($user);
@@ -41,10 +40,9 @@
 			
 		}
 		
-	}
-	else
+	}else{
 		register_error(elgg_echo("webinar:attend:crash"));
-
-	forward($_SERVER['HTTP_REFERER']);
+	}
+	forward(REFERER);
 	exit;
 ?>

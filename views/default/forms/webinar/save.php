@@ -123,8 +123,10 @@ if ( elgg_is_admin_logged_in() ) {
 	$user_bloc = $admin_pwd_input . $user_pwd_input . $server_salt_input . $server_url_input . $logout_url_input; 
 }
 
-$container_guid_input = elgg_view('input/hidden', array('name' => '_webinar_container_guid', 'value' => elgg_get_page_owner_guid()));
-$guid_input = elgg_view('input/hidden', array('name' => 'webinar_guid', 'value' => $vars['guid']));
+$container_guid_input = elgg_view('input/hidden', array('name' => 'container_guid', 'value' => elgg_get_page_owner_guid()));
+if ($vars['guid']) {
+	$guid_input = elgg_view('input/hidden', array('name' => 'guid', 'value' => $vars['guid']));
+}
 
 
 echo <<<___HTML

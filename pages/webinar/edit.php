@@ -33,7 +33,7 @@ elgg_push_breadcrumb(elgg_echo('edit'));
 $title = elgg_echo("webinar:edit");
 
 if ($webinar->canEdit()) {
-	$vars = pages_prepare_form_vars($webinar);
+	$vars = webinar_prepare_form_vars($webinar);
 	$content = elgg_view_form('webinar/save', array(), $vars);
 } else {
 	$content = elgg_echo("webinar:noaccess");

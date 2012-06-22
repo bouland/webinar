@@ -25,7 +25,8 @@ function webinar_get_page_content_view($guid){
 		register_error(elgg_echo('webinar:error:not_found'));
 		forward(REFERER);
 	}
-	
+	//set button join, subscribe/unsubscribe and start/top
+	webinar_menu_title($guid);
 	//set breadcrumb
 	$container = $webinar->getContainerEntity();
 	$crumbs_title = $container->name;
@@ -42,12 +43,10 @@ function webinar_get_page_content_view($guid){
 	$return['content'] .= elgg_view_entity($webinar, array('full_view' => true));
 	
 	if ($webinar->comments_on != 'Off') {
-		$return['content'] .= elgg_view_comments($blog);
+		$return['content'] .= elgg_view_comments($webinar);
 	}
 	
-	if ($webinar->isUpcomming()) {
-		$return['sidebar'] = elgg_view('webinar/members', array('entity' => $webinar, 'relationship' => 'attendee'));
-	}
+	$return['sidebar'] = $webinar->getSidebar();
 	
 	return $return;
 }
@@ -65,12 +64,19 @@ function webinar_get_page_content_edit($action_type, $guid = 0){
 			'filter' => '',
 	);
 	
-	if ($page == 'edit') {
+	if ($action_type == 'edit') {
 		$title = elgg_echo("webinar:edit");
 		
 		$webinar = get_entity($guid);
 		if (elgg_instanceof($webinar, 'object', 'webinar') && $webinar->canEdit()) {
 			
+			$container = $webinar->getContainerEntity();
+			$crumbs_title = $container->name;
+			if (elgg_instanceof($container, 'group')) {
+				elgg_push_breadcrumb($crumbs_title, "webinar/group/$container->guid/all");
+			} else {
+				elgg_push_breadcrumb($crumbs_title, "webinar/owner/$container->username");
+			}
 			elgg_push_breadcrumb($webinar->title, $webinar->getURL());
 			elgg_push_breadcrumb(elgg_echo('edit'));
 			
@@ -82,7 +88,7 @@ function webinar_get_page_content_edit($action_type, $guid = 0){
 			forward($webinar->getURL());
 		}
 	} else {
-		$title = elgg_echo('webinar:new');
+		
 		
 		if (!$guid) {
 			$container = elgg_get_logged_in_user_entity();
@@ -96,8 +102,10 @@ function webinar_get_page_content_edit($action_type, $guid = 0){
 		
 		$crumbs_title = $container->name;
 		if (elgg_instanceof($container, 'group')) {
+			$title = elgg_echo('webinar:new:group', array($container->name));
 			elgg_push_breadcrumb($crumbs_title, "webinar/group/$container->guid/all");
 		} else {
+			$title = elgg_echo('webinar:new:user');
 			elgg_push_breadcrumb($crumbs_title, "webinar/owner/$container->username");
 		}
 		elgg_push_breadcrumb(elgg_echo('webinar:add'));
@@ -179,9 +187,11 @@ function webinar_get_page_content_list($page = array()){
 				forward("webinar/all");
 			}
 			$href .=  "/$page[1]";
+			$filter = 'all';
 		}else if($guid_type = 'group' && is_numeric($page[1])){
 			$guid = $page[1];
 			$href .=  "/$page[1]";
+			$filter = 'all';
 		}else{
 			register_error(elgg_echo('webinar:error:wrong_request'));
 			forward("webinar/all");
@@ -307,7 +317,53 @@ function webinar_get_page_content_list($page = array()){
 	
 }
 
-function webinar_get_page_content_relationships($relationship, $guid){}
+function webinar_get_page_content_relationships($relationship, $guid){
+	
+	$return = array();
+	
+	$return = array(
+			'filter' => '',
+	);
+	
+	$webinar = get_entity($guid);
+	
+	if (!$webinar || !elgg_instanceof($webinar, 'object', 'webinar')) {
+		register_error(elgg_echo('webinar:error:not_found'));
+		forward(REFERER);
+	}
+	
+	//set Title
+	$title = htmlspecialchars($webinar->title);
+	$return['title'] = elgg_echo("webinar:members:$relationship:title", array($title));
+	
+	//set breadcrumb
+	$container = $webinar->getContainerEntity();
+	$crumbs_title = $container->name;
+	if (elgg_instanceof($container, 'group')) {
+		elgg_push_breadcrumb($crumbs_title, "webinar/group/$container->guid/all");
+	} else {
+		elgg_push_breadcrumb($crumbs_title, "webinar/owner/$container->username");
+	}
+	elgg_push_breadcrumb($title, $webinar->getURL());
+	elgg_push_breadcrumb(elgg_echo("webinar:members:$relationship"));
+	
+	$list = elgg_list_entities_from_relationship(array(
+			'relationship' => $relationship,
+			'relationship_guid' => $webinar->getGUID(),
+			'inverse_relationship' => true,
+			'types' => 'user',
+			'limit' => 20,
+	));
+	
+	if (!$list) {
+		$return['content'] = elgg_echo('webinar:members:no');
+	} else {
+		$return['content'] = $list;
+	}
+	
+	return $return;
+	
+}
 
 function webinar_get_free_slots($container_guid, $limit = 1){
 	$slots = array();
@@ -384,6 +440,12 @@ function webinar_is_attendee($webinar_guid, $user_guid) {
 		return false;
 	}
 }
+/**
+ * Register menu title for webinar view
+ *
+ * @param int     $webinar_guid     GUID of webinar or container
+ * @return true
+ */
 function webinar_menu_title($webinar_guid){
 	$webinar = get_entity($webinar_guid);
 	$user = elgg_get_logged_in_user_entity();

@@ -10,7 +10,7 @@
 */
 
 $limit = elgg_extract('limit', $vars, 10);
-$relationship = elgg_extract('relationship', $vars, 'registred');
+$relationship = elgg_extract('relationship', $vars, 'registered');
 
 $all_link = elgg_view('output/url', array(
 		'href' => "webinar/$relationship/{$vars['entity']->guid}",
@@ -28,6 +28,9 @@ $body = elgg_list_entities_from_relationship(array(
 		'gallery_class' => 'elgg-gallery-users',
 ));
 
-$body .= "<div class='center mts'>$all_link</div>";
-
+if($body){
+	$body .= "<div class='center mts'>$all_link</div>";
+}else{
+	$body = elgg_echo("webinar:members:no");
+}
 echo elgg_view_module('aside', elgg_echo("webinar:members:$relationship"), $body);

@@ -38,11 +38,11 @@ class ElggWebinar extends ElggObject {
 	public function getSidebar(){
 		switch($this->status){
 			case 'upcoming':
-				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'registred'));
+				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'registered'));
 				break;
 			case 'running':
-				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'registred'));
-				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'attendee'));
+				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'registered'));
+				$sidebar .= elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'attendee'));
 				break;
 			default:
 				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'attendee'));

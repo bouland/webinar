@@ -20,7 +20,7 @@ $container = $webinar->getContainerEntity();
 $description = elgg_view('output/longtext', array('value' => $webinar->description, 'class' => 'pbl'));
 
 $owner_link = elgg_view('output/url', array(
-		'href' => "webinar/owner/$owner->username",
+		'href' => "profile/$owner->username",
 		'text' => $owner->name,
 		'is_trusted' => true,
 ));

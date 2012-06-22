@@ -51,7 +51,7 @@
 		
 		// add checkbox on group edit page to activate webinar
 		add_group_tool_option('webinar',elgg_echo('webinar:enable'),false);
-		
+		elgg_extend_view('groups/tool_latest', 'webinar/group_module');
 		// owner_block menu
 		elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'webinar_handler_menu_owner_block');
 		// entity menu
@@ -68,8 +68,8 @@
 		//on event create attendee relation ship, call add_river
 		elgg_register_event_handler('create','attendee','webinar_handler_relationship_river');
 		
-		//elgg_extend_view('groups/left_column', 'webinar/profilegroup');
-		//elgg_extend_view('submenu/extend', 'webinar/relationships');
+		// add a blog widget
+		elgg_register_widget_type('webinar', elgg_echo('webinar:webinars'), elgg_echo('webinar:widget:description'), 'profile');
 		
 		//elgg_extend_view('profile/tabs/menu_extend','webinar/group_profile_tabs_menu');
 		

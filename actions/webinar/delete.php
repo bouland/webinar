@@ -1,29 +1,34 @@
 <?php
+/**
+ * Elgg webinar delete
+ *
+ * @package Elgg.webinar
+ */
 
-	$webinar_guid = get_input('webinar_guid');
-	
-	if ($webinar = get_entity($webinar_guid) && $webinar instanceof ElggWebinar) {
-		
-		if ($webinar->canEdit()) {
+$guid = (int) get_input('guid');
 
-			$container = get_entity($webinar->container_guid);
-			
-			foreach($webinar->getEvent() as $event){
-				$event->delete();
-			}
-			
-			if ($webinar->delete()) {
-				system_message(elgg_echo('webinar:delete:success'));
-				
-				set_page_owner($container->guid);
-				forward("pg/webinar/owned/{$container->username}");
-			}
-			
-		}
-		
-	}
-	
-	register_error(elgg_echo('pages:delete:failure'));
-	forward($_SERVER['HTTP_REFERER']);
+$entity = get_entity($guid);
 
-?>
+if (elgg_instanceof($container, 'object', 'webinar')) {
+	register_error(elgg_echo("webinar:delete:failed"));
+	forward(REFERER);
+}
+
+if (!$entity->canEdit()) {
+	register_error(elgg_echo("webinar:delete:failed"));
+	forward($entity->getURL());
+}
+
+$container = $entity->getContainerEntity();
+
+if (!$entity->delete()) {
+	register_error(elgg_echo("webinar:delete:failed"));
+} else {
+	system_message(elgg_echo("webinar:delete:success"));
+}
+
+if (elgg_instanceof($container, 'group')) {
+	forward("webinar/group/$container->guid/all");
+} else {
+	forward("webinar/owner/$container->username");
+}

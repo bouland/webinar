@@ -52,11 +52,10 @@
 		// add checkbox on group edit page to activate webinar
 		add_group_tool_option('webinar',elgg_echo('webinar:enable'),false);
 		
-		elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'webinar_menu_owner_block');
+		// owner_block menu
+		elgg_register_plugin_hook_handler('register', 'menu:owner_block', 'webinar_handler_menu_owner_block');
 		// entity menu
-		elgg_register_plugin_hook_handler('register', 'menu:entity', 'webinar_menu_entity');
-		// title menu
-		elgg_register_plugin_hook_handler('register', 'menu:title', 'webinar_menu_title');
+		elgg_register_plugin_hook_handler('register', 'menu:entity', 'webinar_handler_menu_entity');
 		
 		// Listen to notification events and supply a more useful message
 		elgg_register_plugin_hook_handler('notify:entity:message', 'object', 'webinar_handler_notify_message');
@@ -78,12 +77,13 @@
 	/**
 	 * Dispatcher for webinar.
 	 * URLs take the form of
-	 *  All webinar:      webinar/all
-	 *  View webinar: 	  webinar/view/<guid>
-	 *  Add webinar:      webinar/new/<guid_container> (container: user, group)
-	 *  Edit webinar:     webinar/edit/<guid>
-	 *  User's webinar:   webinar/owner/<guid>/all
-	 *  Group webinar:    webinar/group/<guid>/all
+	 *  All webinar:      		webinar/all
+	 *  View webinar: 	  		webinar/view/<guid>
+	 *  Add webinar:      		webinar/new/<guid_container> (container: user, group)
+	 *  Edit webinar:     		webinar/edit/<guid>
+	 *  User's webinar:   		webinar/owner/<username>/
+	 *  User friends's webinar:	webinar/friends/<username>/
+	 *  Group webinar:    		webinar/group/<guid>/all
 	 *  Relationship to webinar : webinar/<attendee | registered>/<guid>
 	 *
 	 * Title is ignored
@@ -95,58 +95,41 @@
 	
 		elgg_load_library('elgg:webinar');
 		
+		// push all webinars breadcrumb
+		elgg_push_breadcrumb(elgg_echo('webinar:webinars'), "webinar/all");
+		
 		if (!isset($page[0])) {
 			$page[0] = 'all';
 		}
 		
-		$base_dir = elgg_get_plugins_path() . 'webinar/pages/webinar';
-		// See what context we're using
-		switch($page[0]) {
+		$page_type = $page[0];
+		switch($page_type) {
 			case 'all':
-    				include "$base_dir/all.php";
-    				break;
+			case "owner":
+			case 'friends':
+			case "group":
+				$params = webinar_get_page_content_list($page);
+				break;
 			case "view":
 				if (isset($page[1]) && is_numeric($page[1])) {
-					set_input('guid', $page[1]);
-					include "$base_dir/view.php";
+					$params = webinar_get_page_content_view($page[1]);
 				}else{
 					return false;
 				}
 				break;
 			case "add":
-				gatekeeper();
-				if (isset($page[1]) && is_numeric($page[1])) {
-					set_input('guid', $page[1]);
-					include "$base_dir/new.php";
-				}else{
-					return false;
-				}
-				break;
 			case "edit":
 				gatekeeper();
 				if (isset($page[1]) && is_numeric($page[1])) {
-					set_input('guid', $page[1]);
-					include "$base_dir/edit.php";
+					$params = webinar_get_page_content_edit($page_type, $page[1]);
 				}else{
 					return false;
 				}
 				break;
-			case "owner":
-				include "$base_dir/owner.php";
-				break;
-			case "group":
-				group_gatekeeper();
-	    		if (isset($page[1]) && is_numeric($page[1])) {
-	    			set_input('guid',$page[1]);
-				}
-				include "$base_dir/owner.php";	
-    			break;
-    		case "attendee":
+			case "attendee":
 			case "registered":
 				if (isset($page[1]) && is_numeric($page[1])) {
-					set_input('relationship', $page[0]);
-					set_input('guid', $page[1]);
-					include "$base_dir/relationShips.php";
+					$params = webinar_get_page_content_relationships($page_type, $page[1]);
 				}else{
 					return false;
 				}
@@ -155,15 +138,25 @@
 	    		return false;
 	    		break;
 		}
+		
+		if (isset($params['sidebar'])) {
+			$params['sidebar'] .= elgg_view('webinar/sidebar', array('page' => $page_type));
+		} else {
+			$params['sidebar'] = elgg_view('webinar/sidebar', array('page' => $page_type));
+		}
+		
+		$body = elgg_view_layout('content', $params);
+		
+		echo elgg_view_page($params['title'], $body);
 		return true;
 	}
 	/**
 	 * Add a menu item to the user ownerblock
 	 */
-	function webinar_menu_owner_block($hook, $type, $return, $params) {
+	function webinar_handler_menu_owner_block($hook, $type, $return, $params) {
 		if (elgg_instanceof($params['entity'], 'user')) {
 			$url = "webinar/owner/{$params['entity']->username}";
-			$item = new ElggMenuItem('webinar', elgg_echo('pages'), $url);
+			$item = new ElggMenuItem('webinar', elgg_echo('webinar:webinars'), $url);
 			$return[] = $item;
 		} else {
 			if ($params['entity']->webinar_enable != "no") {
@@ -178,7 +171,7 @@
 	/**
 	 * Add specific webinar links/info to entity menu.
 	 */
-	function webinar_menu_entity($hook, $type, $return, $params) {
+	function webinar_handler_menu_entity($hook, $type, $return, $params) {
 		if (elgg_in_context('widgets')) {
 			return $return;
 		}
@@ -208,42 +201,6 @@
 			}
 		}
 	
-		return $return;
-	}
-	/**
-	 * Add specific webinar action to title menu on view page
-	 */
-	function webinar_menu_title($hook, $type, $return, $params) {
-		if (elgg_in_context('widgets')) {
-			return $return;
-		}
-	
-		$entity = $params['entity'];
-		$handler = elgg_extract('handler', $params, false);
-		if ($handler != 'webinar') {
-			return $return;
-		}
-		if (elgg_is_logged_in()) {
-		
-			if (!$handler) {
-				$handler = elgg_get_context();
-			}
-		
-			$page_owner = elgg_get_page_owner_entity();
-			if (!$page_owner) {
-				// no owns the page so this is probably an all site list page
-				$page_owner = elgg_get_logged_in_user_entity();
-			}
-			if ($page_owner && $page_owner->canWriteToContainer()) {
-				$options = array(	'name' => 'start',
-							'href' => "action/webinar/start/{$entity->guid}",
-							'text' => elgg_echo("webinar:start"),
-							'link_class' => 'elgg-button elgg-button-action',
-						);
-				$return[] = ElggMenuItem::factory($options);
-			}
-		}
-		
 		return $return;
 	}
 	function webinar_handler_notify_message($hook, $entity_type, $returnvalue, $params)

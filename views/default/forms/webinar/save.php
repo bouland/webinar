@@ -9,7 +9,7 @@ $delete_button = '';
 
 if ($vars['guid']) {
 	// add a delete button if editing
-	$delete_url = "action/blog/delete?guid={$vars['guid']}";
+	$delete_url = "action/webinar/delete?guid={$vars['guid']}";
 	$delete_button = elgg_view('output/confirmlink', array(
 			'href' => $delete_url,
 			'text' => elgg_echo('delete'),

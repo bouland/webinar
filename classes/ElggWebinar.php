@@ -35,6 +35,21 @@ class ElggWebinar extends ElggObject {
 	public function isCancel(){
 		return $this->status == 'cancel';
 	}
+	public function getSidebar(){
+		switch($this->status){
+			case 'upcoming':
+				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'registred'));
+				break;
+			case 'running':
+				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'registred'));
+				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'attendee'));
+				break;
+			default:
+				$sidebar = elgg_view('webinar/members', array('entity' => $this, 'relationship' => 'attendee'));
+				break;
+		}
+		return $sidebar;
+	}
 	public function updateStatus(){
 		$server = $this->getServer();
 		return $server->isWebinarRunning($this->guid, $this->server_url, $this->server_salt);

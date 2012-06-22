@@ -9,7 +9,7 @@ if ( ($webinar = get_entity($webinar_guid)) && $webinar instanceof ElggWebinar){
 		$webinar->status = 'running';
 		$webinar->save();
 		
-		//add_to_river('river/object/webinar/start','start',elgg_get_logged_in_user_guid(),$webinar->guid);
+		add_to_river('river/object/webinar/start','start',elgg_get_logged_in_user_guid(),$webinar->guid);
 		
 	}else{
 		system_message(elgg_echo("webinar:isNotUpcomming"));

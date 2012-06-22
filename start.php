@@ -8,7 +8,7 @@
 	define('WEBINAR_MEETING_SLOT_TIME_START', 12);
 	define('WEBINAR_MEETING_SLOT_TIME_END', 13);
 
-	register_elgg_event_handler('init','system','webinar_init');
+	elgg_register_event_handler('init','system','webinar_init');
 	
 	/**
 	 * Initialize the webinar plugin.
@@ -159,7 +159,7 @@
 			$item = new ElggMenuItem('webinar', elgg_echo('webinar:webinars'), $url);
 			$return[] = $item;
 		} else {
-			if ($params['entity']->webinar_enable != "no") {
+			if ($params['entity']->webinar_enable == "yes") {
 				$url = "webinar/group/{$params['entity']->guid}/all";
 				$item = new ElggMenuItem('webinar', elgg_echo('webinar:group'), $url);
 				$return[] = $item;

@@ -51,7 +51,7 @@ if (sizeof($input) > 0) {
 			$webinar->logout_url = $webinar->getURL();
 			$webinar->save();
 			
-			//add_to_river('river/object/webinar/create', 'create', elgg_get_logged_in_user_guid(), $webinar->getGUID());
+			add_to_river('river/object/webinar/create', 'create', elgg_get_logged_in_user_guid(), $webinar->getGUID());
 		}
 		
 		forward($webinar->getURL());

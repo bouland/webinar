@@ -17,7 +17,7 @@
 			if (!$webinar->isRegistered($user)) {
 				if ($webinar->subscribe($user))
 				{
-					//add_to_river('river/relationship/registered/create','register',$user->guid,$webinar->guid);
+					add_to_river('river/relationship/registered/create','register',$user->guid,$webinar->guid);
 					
 					system_message(elgg_echo("webinar:subscribe:success"));
 		

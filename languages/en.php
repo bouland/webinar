@@ -105,6 +105,16 @@
 		'webinar:widget:no' => 'No webinar',
 		'webinar:write_access_id' => 'Write access',
 	
+		
+		/**
+		 * River
+		 **/
+		
+		'river:create:object:webinar' => '%s created a webinar %s',
+		'river:start:object:webinar' => '%s started the webinar %s',
+		'river:attendee:object:webinar' => '%s subscribed to the webinar %s',
+		'river:registered:object:webinar' => '%s joined the webinar %s',
+		
 		);
 
 	add_translation("en",$english);

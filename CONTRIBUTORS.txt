@@ -1,5 +1,0 @@
-The following have made notable contributions to the Elgg Project.
-(List in alphabetical order.)
-
-
-Simon Bouland - http://www.bouland.org/

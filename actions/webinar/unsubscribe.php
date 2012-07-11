@@ -11,6 +11,8 @@
 
 	if (($user instanceof ElggUser) && ($webinar instanceof Elggwebinar))
 	{
+		elgg_load_library('elgg:webinar');
+		
 		if ($webinar->isRegistered($user)) {
 			if ($webinar->unsubscribe($user)){
 				system_message(elgg_echo("webinar:unsubscribe:success"));

@@ -9,6 +9,7 @@
 	$french = array (
 	
 
+		'item:object:webinar' => "Webinar",
 		'webinar:access_id' => 'Accès',
 		'webinar:adminPwd' => 'Mot de passe administrateur',
 		'webinar:attendee:title' => "Les participants du webinar",
@@ -73,7 +74,6 @@
 		'webinar:settings:label:server' => 'Serveur Big Blue Button',
 		'webinar:settings:label:serverSalt' => 'Security Salt',
 		'webinar:settings:label:serverURL' => 'URL',
-		'item:object:webinar' => "Webinars",
 		'webinar:river:create' => "%s a créé le webinar",
 		'webinar:river:start' => "Le webinar %s vient de démarrer !!",
 		'webinar:river:registered:create' => "%s s'est inscrit au webinar",

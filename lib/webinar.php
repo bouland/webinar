@@ -94,7 +94,7 @@ function webinar_get_page_content_edit($action_type, $guid = 0){
 			$container = elgg_get_logged_in_user_entity();
 		} else {
 			$container = get_entity($guid);
-			if (!$container->canEdit()) {
+			if (!$container->canWriteToContainer(0, 'object', 'webinar')){
 				register_error(elgg_echo('webinar:error:cannot_edit'));
 				forward($container->getURL());
 			}

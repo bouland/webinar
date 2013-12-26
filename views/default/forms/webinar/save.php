@@ -116,7 +116,7 @@ if ( elgg_is_admin_logged_in() ) {
 	$admin_pwd_input = elgg_view('input/hidden', array('name' => 'admin_pwd','id' => 'webinar_admin_pwd','value' => $vars['admin_pwd']));
 	$user_pwd_input = elgg_view('input/hidden', array('name' => 'user_pwd','id' => 'webinar_user_pwd','value' => $vars['user_pwd']));
 	$server_salt_input = elgg_view('input/hidden', array('name' => 'server_salt','id' => 'webinar_server_salt','value' => $vars['server_salt']));
-	$server_url_input = elgg_view('input/hidden', array('name' => 'server_salt','id' => 'webinar_server_salt','value' => $vars['server_salt']));
+	$server_url_input = elgg_view('input/hidden', array('name' => 'server_url','id' => 'webinar_server_url','value' => $vars['server_url']));
 	if ($vars['logout_url']) {
 		$logout_url_input = elgg_view('input/hidden', array('name' => 'webinar_logout_url', 'value' => $vars['logout_url']));
 	}
